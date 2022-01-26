@@ -29,7 +29,10 @@ type TestCase struct {
 }
 
 // H is the type of the request and response headers
-type H map[string]string
+type H struct {
+	Key   string
+	Value string
+}
 
 // New returns a client for API testing
 func New(handler http.Handler) *T {
@@ -116,15 +119,15 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 		t.Errorf("%q is not returns code returens %d, want %d", endpoint, actual.StatusCode, expected.Status)
 	}
 
-	for k, v := range expected.Header {
-		if _, ok := actual.Header[k]; !ok {
+	for _, h := range expected.Headers {
+		if _, ok := actual.Header[h.Key]; !ok {
 			// TODO: メッセージ
-			t.Errorf("%q is not returns header %q", endpoint, k)
+			t.Errorf("%q is not returns header %q", endpoint, h.Key)
 			continue
 		}
-		if a := actual.Header.Get(k); a != v {
+		if a := actual.Header.Get(h.Key); a != h.Value {
 			// TODO: メッセージ
-			t.Errorf("%q header %q returens %q, want %q", endpoint, k, a, v)
+			t.Errorf("%q header %q returens %q, want %q", endpoint, h.Key, a, h.Value)
 		}
 	}
 

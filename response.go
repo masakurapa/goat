@@ -4,21 +4,25 @@ package goat
 type Response struct {
 	// Status is the response status code
 	Status int
-	// Header is the response headers
-	Header H
+	// Headers is the response headers
+	Headers []H
 	// Body is the response body
 	Body string
 }
 
-func JsonResponse(status int, body string, header H) Response {
-	return JsonResponseWithCharset(status, body, "utf8", header)
+func JsonResponse(status int, body string, headers ...H) Response {
+	return Response{
+		Status:  status,
+		Body:    body,
+		Headers: headers,
+	}
 }
 
-func JsonResponseWithCharset(status int, body, charset string, header H) Response {
-	header["Content-Type"] = "application/json; charset=" + charset
+func JsonResponseWithCharset(status int, body, charset string, headers ...H) Response {
+	headers = append(headers, H{Key: "Content-Type", Value: "application/json; charset=utf8"})
 	return Response{
-		Status: status,
-		Body:   body,
-		Header: header,
+		Status:  status,
+		Body:    body,
+		Headers: headers,
 	}
 }

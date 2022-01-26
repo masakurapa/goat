@@ -21,8 +21,8 @@ type Request struct {
 	Path string
 	// Query is the query string parameter
 	Query Q
-	// Header is the request header
-	Header H
+	// Headers is the request headers
+	Headers []H
 	// Body is the request body
 	Body string
 }
@@ -38,10 +38,8 @@ func (r *Request) makeRequest(serv *httptest.Server) (*http.Request, error) {
 		return nil, err
 	}
 
-	if r.Header != nil {
-		for k, v := range r.Header {
-			req.Header.Add(k, v)
-		}
+	for _, h := range r.Headers {
+		req.Header.Add(h.Key, h.Value)
 	}
 
 	return req, nil
