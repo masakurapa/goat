@@ -2,15 +2,11 @@ package goat
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"reflect"
-	"strings"
 
-	"github.com/masakurapa/qstringer"
+	"github.com/masakurapa/qstring"
 )
 
 // Request is the type for manage request parameters.
@@ -57,7 +53,7 @@ func (r *Request) url(serv *httptest.Server) (string, error) {
 		return url, nil
 	}
 
-	query, err := qstringer.Encode(r.Query)
+	query, err := qstring.Encode(r.Query)
 	if err != nil {
 		return "", err
 	}
@@ -83,57 +79,3 @@ type Q map[string]interface{}
 
 // ArrayQ is a type of query string in array format
 type ArrayQ []interface{}
-
-func (q *Q) join() (string, error) {
-	if len(*q) == 0 {
-		return "", nil
-	}
-
-	params := url.Values{}
-	for k, v := range *q {
-		r := reflect.ValueOf(v)
-		switch r.Kind() {
-		case reflect.Bool:
-			params.Add(k, fmt.Sprintf("%v", r.Bool()))
-		case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
-			params.Add(k, fmt.Sprintf("%d", r.Int()))
-		case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
-			params.Add(k, fmt.Sprintf("%d", r.Uint()))
-		case reflect.Float32, reflect.Float64:
-			params.Add(k, fmt.Sprintf("%d", r.Float()))
-		case reflect.Slice:
-			sk := k
-			if !strings.HasSuffix(k, "[]") {
-				sk += "[]"
-			}
-
-			for i := 0; i < r.Len(); i++ {
-				sv := r.Index(0)
-				switch sv.Kind() {
-
-				case reflect.Bool:
-					params.Add(k, fmt.Sprintf("%v", r.Bool()))
-				case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
-					params.Add(k, fmt.Sprintf("%d", r.Int()))
-				case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
-					params.Add(k, fmt.Sprintf("%d", r.Uint()))
-				case reflect.Float32, reflect.Float64:
-					params.Add(k, fmt.Sprintf("%d", r.Float()))
-				case reflect.String:
-					params.Add(k, r.String())
-				}
-			}
-
-			params.Add(sk, fmt.Sprintf("%d", r.Float()))
-		case reflect.String:
-			params.Add(k, r.String())
-		// 	float32, float64:
-		// 	params.Add(k, fmt.Sprintf("%d", vt))
-		default:
-			// TODO: メッセージ
-			return "", fmt.Errorf("invalid query string type %q", r.Kind().String())
-		}
-	}
-
-	return "?" + params.Encode(), nil
-}
