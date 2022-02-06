@@ -9,20 +9,3 @@ type Response struct {
 	// Body is the response body
 	Body string
 }
-
-func JsonResponse(status int, body string, headers ...H) Response {
-	return Response{
-		Status:  status,
-		Body:    body,
-		Headers: headers,
-	}
-}
-
-func JsonResponseWithCharset(status int, body, charset string, headers ...H) Response {
-	headers = append(headers, H{Key: "Content-Type", Value: "application/json; charset=utf8"})
-	return Response{
-		Status:  status,
-		Body:    body,
-		Headers: headers,
-	}
-}

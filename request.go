@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-
-	"github.com/masakurapa/qstring"
 )
 
 // Request is the type for manage request parameters.
@@ -19,8 +17,6 @@ type Request struct {
 	//
 	// since we will be using an internally started test server, the scheme, domain, and port are not necessary.
 	Path string
-	// Query is the query string parameter
-	Query Q
 	// Headers is the request headers
 	Headers []H
 	// Body is the request body
@@ -28,11 +24,7 @@ type Request struct {
 }
 
 func (r *Request) makeRequest(serv *httptest.Server) (*http.Request, error) {
-	url, err := r.url(serv)
-	if err != nil {
-		return nil, err
-	}
-
+	url := serv.URL + r.Path
 	req, err := http.NewRequest(r.Method, url, r.body())
 	if err != nil {
 		return nil, err
@@ -43,19 +35,6 @@ func (r *Request) makeRequest(serv *httptest.Server) (*http.Request, error) {
 	}
 
 	return req, nil
-}
-
-func (r *Request) url(serv *httptest.Server) (string, error) {
-	url := serv.URL + r.Path
-	if r.Query == nil {
-		return url, nil
-	}
-
-	query, err := qstring.Encode(r.Query)
-	if err != nil {
-		return "", err
-	}
-	return url + query, nil
 }
 
 func (r *Request) body() io.Reader {
@@ -71,9 +50,3 @@ func (r *Request) hasBody() bool {
 		r.Method == http.MethodPost ||
 		r.Method == http.MethodPut
 }
-
-// Q is the type of the query string parameters
-type Q map[string]interface{}
-
-// ArrayQ is a type of query string in array format
-type ArrayQ []interface{}

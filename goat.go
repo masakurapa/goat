@@ -1,7 +1,6 @@
 package goat
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -24,8 +23,6 @@ type TestCase struct {
 	Request Request
 	// Response is the response parameter of the API
 	Response Response
-	// AfterFuncs is the slice to set up a function to perform arbitrary validation after API execution
-	AfterFuncs []func(*testing.T)
 }
 
 // H is the type of the request and response headers
@@ -86,10 +83,6 @@ func (r *T) Run(t *testing.T, testCases []TestCase) {
 
 			resp := r.send(t, tc.Request)
 			r.assertResponse(t, tc.Request, resp, tc.Response)
-
-			for _, f := range tc.AfterFuncs {
-				f(t)
-			}
 		})
 	}
 }
@@ -113,21 +106,19 @@ func (r *T) send(t *testing.T, request Request) *http.Response {
 func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response, expected Response) {
 	defer actual.Body.Close()
 
-	endpoint := fmt.Sprintf("%s %s", request.Method, request.Path)
+	endpoint := request.Method + " " + request.Path
 
 	if actual.StatusCode != expected.Status {
-		t.Errorf("%q is not returns code returens %d, want %d", endpoint, actual.StatusCode, expected.Status)
+		t.Errorf("[%v] status code returns %d, want %d", endpoint, actual.StatusCode, expected.Status)
 	}
 
 	for _, h := range expected.Headers {
 		if _, ok := actual.Header[h.Key]; !ok {
-			// TODO: メッセージ
-			t.Errorf("%q is not returns header %q", endpoint, h.Key)
+			t.Errorf("[%v] key %q does not exist in header", endpoint, h.Key)
 			continue
 		}
 		if a := actual.Header.Get(h.Key); a != h.Value {
-			// TODO: メッセージ
-			t.Errorf("%q header %q returens %q, want %q", endpoint, h.Key, a, h.Value)
+			t.Errorf("[%v] %q is set to the key %q in the header, want %q", endpoint, h.Key, a, h.Value)
 		}
 	}
 
@@ -135,8 +126,9 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 	if err != nil {
 		t.Fatal(responseBody)
 	}
+
 	// TODO: ResponseBodyに余計なスペースとか含まれる可能性を考慮してcompact化、trimをしてから検証する
-	if actual := string(responseBody); actual != string(expected.Body) {
-		t.Errorf("%q body returens %s, want %s", endpoint, actual, string(expected.Body))
+	if actual := string(responseBody); actual != expected.Body {
+		t.Errorf("[%v] body returens %s, want %s", endpoint, actual, expected.Body)
 	}
 }
