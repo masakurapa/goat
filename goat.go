@@ -1,10 +1,17 @@
 package goat
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+)
+
+const (
+	contentTypeJSON = "application/json"
 )
 
 var (
@@ -127,8 +134,45 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 		t.Fatal(responseBody)
 	}
 
-	// TODO: ResponseBodyに余計なスペースとか含まれる可能性を考慮してcompact化、trimをしてから検証する
-	if actual := string(responseBody); actual != expected.Body {
-		t.Errorf("[%v] body returens %s, want %s", endpoint, actual, expected.Body)
+	// if the status is 204, not validate response body
+	if expected.Status == http.StatusNoContent {
+		return
 	}
+
+	a := strings.TrimSpace(string(responseBody))
+	e := strings.TrimSpace(expected.Body)
+
+	// if the expected value is JSON, json.Compact and compare it
+	if expected.isJSON() {
+		isErr := false
+		if s, err := r.compactJSON(a); err != nil {
+			t.Errorf("response body is not JSON format. error: %s", err)
+			isErr = true
+		} else {
+			a = s
+		}
+
+		if s, err := r.compactJSON(e); err != nil {
+			t.Errorf("expected response body is not JSON format. error: %s", err)
+			isErr = true
+		} else {
+			e = s
+		}
+
+		if isErr {
+			return
+		}
+	}
+
+	if a != e {
+		t.Errorf("[%v] body returens %s, want %s", endpoint, a, e)
+	}
+}
+
+func (r *T) compactJSON(s string) (string, error) {
+	dist := &bytes.Buffer{}
+	if err := json.Compact(dist, []byte(s)); err != nil {
+		return "", err
+	}
+	return dist.String(), nil
 }

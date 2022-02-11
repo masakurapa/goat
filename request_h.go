@@ -42,6 +42,15 @@ func GetRequest(path string, headers ...H) Request {
 	}
 }
 
+// GetJsonRequest is the helper that returns the configuration for sending a GET request with a JSON format body.
+func GetJsonRequest(path string, headers ...H) Request {
+	return Request{
+		Method:  http.MethodGet,
+		Path:    path,
+		Headers: appendJsonHeader(headers),
+	}
+}
+
 // HeadRequest is the helper that returns the configuration for sending a HEAD request
 func HeadRequest(path string, headers ...H) Request {
 	return Request{
@@ -130,7 +139,7 @@ func TraceRequest(path string, headers ...H) Request {
 }
 
 func appendJsonHeader(headers []H) []H {
-	headers = append(headers, H{Key: "Content-Type", Value: "application/json; charset=utf8"})
-	headers = append(headers, H{Key: "Accept", Value: "application/json"})
+	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON + "; charset=utf8"})
+	headers = append(headers, H{Key: "Accept", Value: contentTypeJSON})
 	return headers
 }
