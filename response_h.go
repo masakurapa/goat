@@ -3,7 +3,7 @@ package goat
 import "net/http"
 
 func JsonResponse(status int, body string, headers ...H) Response {
-	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON})
+	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON + "; charset=utf-8"})
 	return Response{
 		Status:  status,
 		Body:    body,
@@ -11,8 +11,8 @@ func JsonResponse(status int, body string, headers ...H) Response {
 	}
 }
 
-func JsonResponseWithCharset(status int, body, charset string, headers ...H) Response {
-	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON + "; charset=" + charset})
+func JsonResponseWithoutCharset(status int, body, charset string, headers ...H) Response {
+	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON})
 	return Response{
 		Status:  status,
 		Body:    body,
