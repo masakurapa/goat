@@ -124,8 +124,12 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 			t.Errorf("[%v] key %q does not exist in header", endpoint, h.Key)
 			continue
 		}
-		if a := actual.Header.Get(h.Key); a != h.Value {
-			t.Errorf("[%v] %q is set to the key %q in the header, want %q", endpoint, h.Key, a, h.Value)
+
+		val := actual.Header.Get(h.Key)
+		a := strings.ToLower(val)
+		e := strings.ToLower(h.Value)
+		if a != e {
+			t.Errorf("[%v] %q is set to the key %q in the header, want %q", endpoint, h.Key, val, h.Value)
 		}
 	}
 
