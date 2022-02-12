@@ -12,9 +12,9 @@ type Response struct {
 	Body string
 }
 
-func (r *Response) isJSON() bool {
+func (r *Response) isJson() bool {
 	for _, header := range r.Headers {
-		if header.Key == "Content-Type" && strings.HasPrefix(header.Value, contentTypeJSON) {
+		if header.Key == "Content-Type" && strings.HasPrefix(header.Value, contentTypeJson) {
 			return true
 		}
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	contentTypeJSON = "application/json"
+	contentTypeJson = "application/json"
 )
 
 var (
@@ -147,16 +147,16 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 	e := strings.TrimSpace(expected.Body)
 
 	// if the expected value is JSON, json.Compact and compare it
-	if expected.isJSON() {
+	if expected.isJson() {
 		isErr := false
-		if s, err := r.compactJSON(a); err != nil {
+		if s, err := r.compactJson(a); err != nil {
 			t.Errorf("response body is not JSON format. error: %s", err)
 			isErr = true
 		} else {
 			a = s
 		}
 
-		if s, err := r.compactJSON(e); err != nil {
+		if s, err := r.compactJson(e); err != nil {
 			t.Errorf("expected response body is not JSON format. error: %s", err)
 			isErr = true
 		} else {
@@ -173,7 +173,7 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 	}
 }
 
-func (r *T) compactJSON(s string) (string, error) {
+func (r *T) compactJson(s string) (string, error) {
 	dist := &bytes.Buffer{}
 	if err := json.Compact(dist, []byte(s)); err != nil {
 		return "", err

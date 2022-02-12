@@ -139,7 +139,7 @@ func TraceRequest(path string, headers ...H) Request {
 }
 
 func appendJsonHeader(headers []H) []H {
-	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJSON + "; charset=utf8"})
-	headers = append(headers, H{Key: "Accept", Value: contentTypeJSON})
+	headers = append(headers, H{Key: "Content-Type", Value: contentTypeJson + "; charset=utf8"})
+	headers = append(headers, H{Key: "Accept", Value: contentTypeJson})
 	return headers
 }
