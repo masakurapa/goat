@@ -134,27 +134,35 @@ func (r *T) assertResponse(t *testing.T, request Request, actual *http.Response,
 		t.Errorf("[%v] status code returns %d, want %d", endpoint, actual.StatusCode, expected.Status)
 	}
 
-	for _, h := range expected.Headers {
-		if _, ok := actual.Header[h.Key]; !ok {
+	r.testResponseHeaders(t, endpoint, actual.Header, expected.Headers)
+	r.testResponseBody(t, endpoint, actual, expected)
+}
+
+func (r *T) testResponseHeaders(t *testing.T, endpoint string, actual http.Header, expected []H) {
+	for _, h := range expected {
+		if _, ok := actual[h.Key]; !ok {
 			t.Errorf("[%v] key %q does not exist in header", endpoint, h.Key)
 			continue
 		}
 
-		val := actual.Header.Get(h.Key)
+		val := actual.Get(h.Key)
 		a := strings.ToLower(val)
 		e := strings.ToLower(h.Value)
 		if a != e {
 			t.Errorf("[%v] %q is set to the key %q in the header, want %q", endpoint, h.Key, val, h.Value)
 		}
 	}
+}
+
+func (r *T) testResponseBody(t *testing.T, endpoint string, actual *http.Response, expected Response) {
+	// if the status is 204, not validate response body
+	if expected.Status == http.StatusNoContent {
+		return
+	}
 
 	responseBody, err := io.ReadAll(actual.Body)
 	if err != nil {
-		t.Fatal(responseBody)
-	}
-
-	// if the status is 204, not validate response body
-	if expected.Status == http.StatusNoContent {
+		t.Errorf("failed to read response body. error: %s", err)
 		return
 	}
 
