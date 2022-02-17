@@ -22,10 +22,22 @@ var (
 type TestCase struct {
 	// Name is the name of the test case
 	Name string
-	// SetUp is the function that runs before the API is executed
+	// SetUp is the function that runs before the API is executed.
+	//
+	// This function performs preprocessing such as migration, test data creation, etc.
 	SetUp func(*testing.T)
 	// TearDown is the function that runs after the API is executed
+	//
+	// This function perform post-processing such as deleting test data, deleting tables, etc.
 	TearDown func(*testing.T)
+	// CustomTestFuncs is a set of functions used when you want to perform validation other
+	// than HTTP status, response header, and response body validation.
+	//
+	// Each `CustomTestFunc` works in series.
+	//
+	// If you use `t.Fatal()`, `t.Fail()`, etc. in a `CustomTestFunc`,
+	// the process will be interrupted and the subsequent `CustomTestFunc` will not be processed.
+	CustomTestFuncs []CustomTestFunc
 	// Request is the request parameter of the API
 	Request Request
 	// Response is the response parameter of the API
@@ -37,6 +49,9 @@ type H struct {
 	Key   string
 	Value string
 }
+
+// CustomTestFunc is a type of function that implements its own validation
+type CustomTestFunc func(t *testing.T, res *http.Response)
 
 // New returns a client for API testing
 func New(handler http.Handler) *T {
@@ -56,17 +71,11 @@ type T struct {
 
 // SetUpBeforeTest set up a function that all test cases will run before execution
 func (r *T) SetUpBeforeTest(f func(*testing.T)) {
-	if f == nil {
-		return
-	}
 	r.setUpBeforeTest = f
 }
 
 // TearDownAfterTest set up a function that all test cases will run after execution
 func (r *T) TearDownAfterTest(f func(*testing.T)) {
-	if f == nil {
-		return
-	}
 	r.tearDownAfterTest = f
 }
 
@@ -90,6 +99,12 @@ func (r *T) Run(t *testing.T, testCases []TestCase) {
 
 			resp := r.send(t, tc.Request)
 			r.assertResponse(t, tc.Request, resp, tc.Response)
+
+			for _, f := range tc.CustomTestFuncs {
+				t.Run("CustomTestFunc", func(t *testing.T) {
+					f(t, resp)
+				})
+			}
 		})
 	}
 }
