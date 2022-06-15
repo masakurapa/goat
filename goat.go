@@ -3,6 +3,7 @@ package goat
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -51,7 +52,10 @@ type H struct {
 }
 
 // CustomTestFunc is a type of function that implements its own validation
-type CustomTestFunc func(t *testing.T, res *http.Response)
+type CustomTestFunc struct {
+	Name string
+	Func func(t *testing.T, res *http.Response)
+}
 
 // New returns a client for API testing
 func New(handler http.Handler) *T {
@@ -100,9 +104,13 @@ func (r *T) Run(t *testing.T, testCases []TestCase) {
 			resp := r.send(t, tc.Request)
 			r.assertResponse(t, tc.Request, resp, tc.Response)
 
-			for _, f := range tc.CustomTestFuncs {
-				t.Run("CustomTestFunc", func(t *testing.T) {
-					f(t, resp)
+			for i, f := range tc.CustomTestFuncs {
+				name := f.Name
+				if name == "" {
+					name = fmt.Sprintf("CustomTestFunc#%d", i)
+				}
+				t.Run(name, func(t *testing.T) {
+					f.Func(t, resp)
 				})
 			}
 		})
