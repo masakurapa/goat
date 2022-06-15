@@ -1,0 +1,8 @@
+go 1.18
+
+use (
+	./basic
+	./echo
+	./gin
+	./net/http
+)

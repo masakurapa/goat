@@ -1,0 +1,5 @@
+github.com/masakurapa/goat v0.2.0/go.mod h1:P5IO9CQU1ILcx4yRPzCz04Ul5+kVO/6yCp/vkcWq0Aw=
+github.com/masakurapa/goat v0.3.0/go.mod h1:P5IO9CQU1ILcx4yRPzCz04Ul5+kVO/6yCp/vkcWq0Aw=
+github.com/masakurapa/goat v0.3.1 h1:xRbA6N1jJOGSZnK0kVpIh6lCbstKwejepAnxzwYsnKs=
+github.com/masakurapa/goat v0.3.1/go.mod h1:VN1d/VJPurz0h2C5KxCRN0gkgt7qInzd+esZQGGMR+k=
+github.com/ugorji/go v1.2.7 h1:qYhyWUUd6WbiM+C6JZAUkIJt/1WrjzNHY9+KCIjVqTo=
